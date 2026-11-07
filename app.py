@@ -31,7 +31,7 @@ st.set_page_config(
 )
 
 st.title("Breast Cancer Classifier")
-st.caption("Compare five models on labeled test data.")
+st.caption("Compare five classifiers using the bundled test data or your own labeled CSV.")
 
 with (MODEL_DIR / "metadata.json").open(encoding="utf-8") as metadata_file:
     metadata = json.load(metadata_file)
@@ -98,19 +98,15 @@ def evaluate_model(estimator, test_frame: pd.DataFrame) -> tuple[dict, pd.DataFr
     return metrics, matrix, report
 
 
-with st.container():
-    setup_column, upload_column = st.columns([1, 2])
-    with setup_column:
-        selected_model = st.selectbox("Model details", model_choices)
-    with upload_column:
-        uploaded_file = st.file_uploader(
-            "Test CSV (optional)",
-            type=["csv"],
-            help=(
-                f"Include all {len(feature_columns)} numeric features and the "
-                f"`{target_column}` target column."
-            ),
-        )
+st.subheader("Test data")
+uploaded_file = st.file_uploader(
+    "Upload a labeled CSV (optional)",
+    type=["csv"],
+    help=(
+        f"Include all {len(feature_columns)} numeric features and the "
+        f"`{target_column}` target column. Leave empty to use the included test data."
+    ),
+)
 
 try:
     if uploaded_file is None:
@@ -170,16 +166,12 @@ if unknown_classes:
     )
     st.stop()
 
-if uploaded_file is None:
-    st.info(
-        f"Showing results for the bundled test data ({len(test_data)} rows). "
-        "Upload a different labeled CSV above to evaluate that data instead."
-    )
-else:
-    st.success(
-        f"Showing results for {uploaded_file.name} ({len(test_data)} rows). "
-        "All metrics below are recalculated for this file; models are not retrained."
-    )
+data_description = (
+    "Included test data"
+    if uploaded_file is None
+    else uploaded_file.name
+)
+st.caption(f"Evaluating {len(test_data)} rows from {data_description}.")
 
 results = {}
 for model_name, estimator in loaded_models.items():
@@ -196,6 +188,7 @@ st.dataframe(
     width="stretch",
 )
 
+selected_model = st.selectbox("Model details", model_choices)
 selected_metrics, selected_matrix, selected_report = evaluate_model(
     loaded_models[selected_model],
     test_data,
