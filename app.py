@@ -25,13 +25,13 @@ MODEL_DIR = ROOT / "model"
 TEST_DATA_PATH = ROOT / "test_data.csv"
 
 st.set_page_config(
-    page_title="Classifier Lab | AIML Assignment 2",
-    page_icon="🧪",
+    page_title="Breast Cancer Classifier",
+    page_icon="📊",
     layout="wide",
 )
 
-st.title("Classifier Lab")
-st.caption("A held-out evaluation dashboard for five classical classification models")
+st.title("Breast Cancer Classifier")
+st.caption("Compare five models on labeled test data.")
 
 with (MODEL_DIR / "metadata.json").open(encoding="utf-8") as metadata_file:
     metadata = json.load(metadata_file)
@@ -98,21 +98,19 @@ def evaluate_model(estimator, test_frame: pd.DataFrame) -> tuple[dict, pd.DataFr
     return metrics, matrix, report
 
 
-with st.sidebar:
-    st.header("Evaluation setup")
-    selected_model = st.selectbox("Inspect a model", model_choices)
-    uploaded_file = st.file_uploader(
-        "Upload a labeled test CSV",
-        type=["csv"],
-        help=(
-            f"Include all {len(feature_columns)} numeric features and the "
-            f"`{target_column}` target column. No model is retrained."
-        ),
-    )
-    st.caption(
-        f"Dataset: {metadata['dataset']} · {len(feature_columns)} features · "
-        f"{metadata['test_rows']} bundled test rows"
-    )
+with st.container():
+    setup_column, upload_column = st.columns([1, 2])
+    with setup_column:
+        selected_model = st.selectbox("Model details", model_choices)
+    with upload_column:
+        uploaded_file = st.file_uploader(
+            "Test CSV (optional)",
+            type=["csv"],
+            help=(
+                f"Include all {len(feature_columns)} numeric features and the "
+                f"`{target_column}` target column."
+            ),
+        )
 
 try:
     if uploaded_file is None:
@@ -172,7 +170,16 @@ if unknown_classes:
     )
     st.stop()
 
-st.info(f"Evaluating {len(test_data)} labeled rows · {data_source}. Models are loaded from disk; no retraining occurs.")
+if uploaded_file is None:
+    st.info(
+        f"Showing results for the bundled test data ({len(test_data)} rows). "
+        "Upload a different labeled CSV above to evaluate that data instead."
+    )
+else:
+    st.success(
+        f"Showing results for {uploaded_file.name} ({len(test_data)} rows). "
+        "All metrics below are recalculated for this file; models are not retrained."
+    )
 
 results = {}
 for model_name, estimator in loaded_models.items():
@@ -185,7 +192,7 @@ for model_name, estimator in loaded_models.items():
 comparison = pd.DataFrame(results).transpose()
 st.subheader("Model comparison")
 st.dataframe(
-    comparison.style.format("{:.4f}").highlight_max(axis=0, color="#d9f2e6"),
+    comparison.style.format("{:.4f}"),
     width="stretch",
 )
 
@@ -193,25 +200,13 @@ selected_metrics, selected_matrix, selected_report = evaluate_model(
     loaded_models[selected_model],
     test_data,
 )
-st.subheader(f"{selected_model} · detailed evaluation")
+st.subheader(selected_model)
 metric_columns = st.columns(len(selected_metrics))
 for column, (metric_name, value) in zip(metric_columns, selected_metrics.items()):
     column.metric(metric_name, f"{value:.4f}")
 
-matrix_column, report_column = st.columns([1, 1.5])
-with matrix_column:
-    st.markdown("#### Confusion matrix")
+with st.expander("Confusion matrix and classification report"):
+    st.markdown("**Confusion matrix**")
     st.dataframe(selected_matrix, width="stretch")
-with report_column:
-    st.markdown("#### Classification report")
+    st.markdown("**Classification report**")
     st.dataframe(selected_report.style.format("{:.4f}"), width="stretch")
-
-with st.expander("About the dataset and experiment"):
-    st.write(
-        "Wisconsin Diagnostic Breast Cancer dataset. The models were trained once "
-        "on the training split; this dashboard only predicts and evaluates uploaded "
-        "labeled test data."
-    )
-    st.write("Target labels: 0 = malignant, 1 = benign.")
-    st.write(f"Dataset source: {metadata['source']}")
-    st.write(f"Test rows: {len(test_data)} · Features: {len(feature_columns)}")

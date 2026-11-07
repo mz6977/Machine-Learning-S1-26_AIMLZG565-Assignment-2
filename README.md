@@ -14,6 +14,10 @@ I used a stratified 80/20 split with random state 42. This gave 455 training rec
 
 [Machine-Learning-S1-26_AIMLZG565-Assignment-2](https://github.com/mz6977/Machine-Learning-S1-26_AIMLZG565-Assignment-2)
 
+## Live app
+
+[Open the Streamlit app](https://2026aj05852-machine-learning-assignment-2.streamlit.app/)
+
 ## d. Models used
 
 The table shows each model's results on the same test data. For precision, recall, F1, and AUC, class `1` (benign) is treated as the positive class.
@@ -39,7 +43,7 @@ The table shows each model's results on the same test data. For precision, recal
 
 ## Streamlit app
 
-The app compares all five saved models. Select a model to see its metrics, confusion matrix, and classification report. You can also upload a CSV with the 30 feature columns and a `target` column. The app evaluates the uploaded data using the saved models; it does not train them again.
+The live app compares all five saved models. Choose a model to view its metrics, confusion matrix, and classification report. You can also upload a CSV with the 30 feature columns and a `target` column. The app uses the saved models and does not train them again.
 
 To run the project locally:
 
@@ -59,4 +63,4 @@ streamlit run app.py
 
 ## Deployment
 
-The app has not been published yet. To make it available online, push this project to GitHub and deploy `app.py` through Streamlit Community Cloud. Add the GitHub link, live app link, and a screenshot from BITS Virtual Lab to the final submission PDF.
+The app is deployed on Streamlit Community Cloud. The GitHub repository and live app links are above. Add a screenshot of the assignment running in BITS Virtual Lab to the final submission PDF.
