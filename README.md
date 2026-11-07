@@ -59,8 +59,5 @@ streamlit run app.py
 - `train_models.py` — script to split the data and train the models.
 - `requirements.txt` — Python packages needed to run the project.
 - `test_data.csv` — held-out test data.
+- `alternate_test_data.csv` — held-out alternate test data.
 - `model/` — saved models and dataset information.
-
-## Deployment
-
-The app is deployed on Streamlit Community Cloud. The GitHub repository and live app links are above. Add a screenshot of the assignment running in BITS Virtual Lab to the final submission PDF.
